@@ -17,7 +17,7 @@ scriptDir = os.path.dirname(__file__)
 databaseFilePath = os.path.join(scriptDir, "todo.txt")
 
 
-def getAllTodos():
+def readAllTodos():
     with open(databaseFilePath, "r") as readFile:
         todos = list()
         record = dict()
@@ -32,8 +32,28 @@ def getAllTodos():
                 key, value = line.split(": ", 1)
                 record[key] = value
 
+        return todos
+
+
+def writeTodosToFile(todos):
+    if len(todos) == 0:
+        return
+    with open(databaseFilePath, "w") as file:
+        file.write("\n")
+
         for todo in todos:
-            print(todo)
+            for key in todo.keys():
+                file.write(f"{key}: {todo[key]} \n")
+            file.write("\n")
+
+
+def getAllTodos():
+    allTodos = readAllTodos()
+    if len(allTodos) == 0:
+        print("No todos found. Please add one.")
+        return
+    for todo in allTodos:
+        print(todo)
 
 
 def getTodoById():
@@ -70,9 +90,10 @@ def createTodo():
     statusList.append("incomplete")
     statusList.append("in progress")
 
-    if (status not in statusList):
+    while (status not in statusList):
         print("invalid status")
-        return
+        status = input(
+            "Enter current status of the task, in progress completed incomplete \n")
 
     todoDictionary = dict()
     todoDictionary["id"] = getUniqueId()
@@ -87,6 +108,36 @@ def createTodo():
             file.write(f"{key}: {todoDictionary[key]} \n")
         file.write("\n")
     print("Todo Added Successfully.")
+
+
+def markTodoAsCompleted():
+    todoId = input("Please Enter todo id to update \n")
+
+    allTodos = readAllTodos()
+
+    for todo in allTodos:
+        if todo["id"] == todoId:
+            # update
+            todo["status"] = "completed"
+            writeTodosToFile(allTodos)
+            print("Todo Status updated successfully")
+            return
+    print("Todo not found.")
+
+
+def deleteTodo():
+    todoId = input("Please Enter todo id to delete \n")
+    allTodos = readAllTodos()
+
+    for i, todo in enumerate(allTodos):
+        print(todo)
+        if todo.get("id") == todoId:
+            # delete
+            del allTodos[i]
+            writeTodosToFile(allTodos)
+            print("Todo deleted successfully")
+            return
+    print("Todo not found.")
 
 
 def main():
@@ -110,9 +161,9 @@ def main():
             case 3:
                 createTodo()
             case 4:
-                print("update particular todo")
+                markTodoAsCompleted()
             case 5:
-                print("delete particular todo")
+                deleteTodo()
             case 6:
                 break
             case _:
